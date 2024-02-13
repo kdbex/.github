@@ -6,7 +6,7 @@ IF EXIST %BUILD_DIR% rmdir /S /Q %BUILD_DIR%
 MKDIR %BUILD_DIR%
 MKDIR %EXTENSION_TARGET%
 MKDIR %SERVER_TARGET%
-COPY *.exe %BUILD_DIR% > NUL
+COPY installer.bat nssm.exe node.exe %BUILD_DIR%
 CD ..\extension
 CALL npm run build > NUL
 ECHO Extension built

@@ -1,6 +1,9 @@
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -13,10 +16,10 @@ typedef struct
     void (*function)(char **);
 } action_t;
 
-#define ACTIONS 5
+#define ACTIONS 6
 #define KDBEX "kdbex"
 #define SERVICE_NAME "KdBex"
-#define FOLDER_NAME "/Kdbex/"
+#define FOLDER_NAME "\\Kdbex\\"
 
 action_t actions[ACTIONS];
 
@@ -41,10 +44,16 @@ void status(char **argv)
 
 FILE *open_config(char *mode)
 {
-    char *appdata = getenv("APPDATA");
-    strcat(appdata, FOLDER_NAME);
-    strcat(appdata, "config.json");
-    return fopen(appdata, mode);
+    char *folder = getenv("APPDATA");
+    strcat(folder, FOLDER_NAME);
+    struct stat st = {0};
+    if (stat(folder, &st) == -1) {
+        printf("Folder does not exists");
+        mkdir(folder, 0700);
+    }
+    strcat(folder, "config.json");
+    printf("Opening file: %s\n", folder);
+    return fopen(folder, mode);
 }
 
 void view(char **argv)
@@ -79,6 +88,24 @@ void install(char **argv)
     system(command);
 }
 
+void keygen(char **argv)
+{
+    char key[100];
+    for (int i = 0; i < 100; i++)
+    {
+        int r = rand() % 16;
+        if (r < 10)
+        {
+            key[i] = (char)(r + 48);
+        }
+        else
+        {
+            key[i] = (char)(r + 87);
+        }
+    }
+    printf("Random key: %s\n", key);
+}
+
 void uninstall(char **argv)
 {
     char command[100];
@@ -93,7 +120,14 @@ int main(int argc, char **argv)
     actions[2] = (action_t){0, "config", "", "Shows the current config", &view};
     actions[3] = (action_t){3, "install", "<filePath> <port> <token>", "Installs the server with this config", &install};
     actions[4] = (action_t){0, "remove", "<filePath> <port> <token>", "Uninstalls", &uninstall};
-
+    actions[5] = (action_t){0, "keygen", "", "Generates a random key", &keygen};
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Current working dir: %s\n", cwd);
+    } else {
+        perror("getcwd() error");
+        return 1;
+    }
     if (argc == 1)
     {
         printf("Use --help to get help \n");
