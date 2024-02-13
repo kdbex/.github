@@ -49,7 +49,7 @@ FILE *open_config(char *mode)
     struct stat st = {0};
     if (stat(folder, &st) == -1) {
         printf("Folder does not exists");
-        mkdir(folder, 0700);
+        mkdir(folder);
     }
     strcat(folder, "config.json");
     printf("Opening file: %s\n", folder);
@@ -84,7 +84,7 @@ void install(char **argv)
     FILE *file = open_config("w");
     fputs(config, file);
     char command[200];
-    snprintf(command, 200, "nssm.exe install %s \"D:\\Workspace\\Kdbex\\server\\node.exe\" \"D:\\Workspace\\Kdbex\\server\\dist\\server\\app.js\"", SERVICE_NAME);
+    snprintf(command, 200, "nssm.exe install %s node.exe server\\app.js", SERVICE_NAME);
     system(command);
 }
 
